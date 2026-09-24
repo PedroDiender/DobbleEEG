@@ -16,6 +16,7 @@ public class GameManager : MonoBehaviour
 
     [Header("Estado")]
     public int deckSize = 55;
+
     private List<CardData> _pile;
     private CardData _currentCard;
     private CardData _nextCard;
@@ -24,7 +25,10 @@ public class GameManager : MonoBehaviour
     private int _hits, _misses;
     private float _elapsed;
     private bool _running;
-    private float _roundStartTime;
+
+    private double _gameStartTime;
+    private double _roundStartTime;
+
     private readonly List<float> _reactionTimes = new List<float>();
 
     private void Awake()
@@ -46,6 +50,8 @@ public class GameManager : MonoBehaviour
         _reactionTimes.Clear();
         _running = true;
 
+        _gameStartTime = Time.realtimeSinceStartupAsDouble;
+
         hud.UpdateHud(_hits, _misses, _pile.Count, 0f);
 
         LSLMarkerOutlet.Instance.SendGameStart(deckSize);
@@ -56,7 +62,7 @@ public class GameManager : MonoBehaviour
     private void Update()
     {
         if (!_running) return;
-        _elapsed += Time.deltaTime;
+        _elapsed = (float)(Time.realtimeSinceStartupAsDouble - _gameStartTime);
         hud.UpdateTimer(_elapsed);
     }
 
@@ -78,7 +84,7 @@ public class GameManager : MonoBehaviour
 
         hud.UpdateHud(_hits, _misses, _pile.Count, _elapsed);
 
-        _roundStartTime = Time.realtimeSinceStartup;
+        _roundStartTime = Time.realtimeSinceStartupAsDouble;
 
         LSLMarkerOutlet.Instance.SendNewRound(_currentCard, _nextCard);
     }
@@ -87,16 +93,18 @@ public class GameManager : MonoBehaviour
     {
         if (!_running) return;
 
-        float reactionMs = (Time.realtimeSinceStartup - _roundStartTime) * 1000f;
+        double reactionMs = (Time.realtimeSinceStartupAsDouble - _roundStartTime) * 1000.0;
+        float reactionMsF = (float)reactionMs;
 
         if (symbolId == _correctSymbolId)
         {
             _hits++;
-            _reactionTimes.Add(reactionMs);
+            _reactionTimes.Add(reactionMsF);
+
             VisualFeedback.Instance.PlayHit(cardRight);
             hud.UpdateHud(_hits, _misses, _pile.Count, _elapsed);
 
-            LSLMarkerOutlet.Instance.SendHit(symbolId, reactionMs);
+            LSLMarkerOutlet.Instance.SendHit(symbolId, reactionMsF);
 
             _currentCard = _nextCard;
             StartCoroutine(NextRoundDelayed(0.35f));
@@ -104,6 +112,7 @@ public class GameManager : MonoBehaviour
         else
         {
             _misses++;
+
             VisualFeedback.Instance.PlayMiss(cardRight);
             hud.UpdateHud(_hits, _misses, _pile.Count, _elapsed);
 

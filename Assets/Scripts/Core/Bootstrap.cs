@@ -4,7 +4,7 @@ public class Bootstrap : MonoBehaviour
 {
     private void Start()
     {
-        int mode = PlayerPrefs.GetInt("DeckMode", 55);
+        int mode = 4;
         GameManager.Instance.StartGame(mode);
     }
 }

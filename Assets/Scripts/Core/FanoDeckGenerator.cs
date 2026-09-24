@@ -4,11 +4,14 @@ using UnityEngine;
 
 public static class FanoDeckGenerator
 {
-    public const int N = 7;                    
-    public const int SymbolsPerCard = N + 1;   
-    public const int TotalSymbols = N * N + N + 1; 
+    public const int N = 7;
+    public const int SymbolsPerCard = N + 1;
+    public const int TotalSymbols = N * N + N + 1;
 
     public enum SymbolSize { Small = 26, Medium = 38, Large = 52 }
+
+    private static readonly SymbolSize[] AllSizes =
+        { SymbolSize.Small, SymbolSize.Medium, SymbolSize.Large };
 
     public static List<CardData> GenerateDeck(int limit)
     {
@@ -48,7 +51,7 @@ public static class FanoDeckGenerator
         return limpas.Select(ids => new CardData
         {
             SymbolIds = ids,
-            Sizes = ids.Select(_ => (SymbolSize)Random.Range(0, 3)).ToArray()
+            Sizes = ids.Select(_ => AllSizes[Random.Range(0, AllSizes.Length)]).ToArray()
         }).ToList();
     }
 }
